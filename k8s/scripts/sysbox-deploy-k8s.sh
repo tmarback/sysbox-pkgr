@@ -49,7 +49,11 @@ host_etc="/mnt/host/etc"
 host_os_release="/mnt/host/os-release"
 host_crio_conf_file="${host_etc}/crio/crio.conf"
 host_crio_conf_file_backup="${host_crio_conf_file}.orig"
-host_containerd_conf_file="${host_etc}/containerd/config.toml"
+if [ -v CONTAINERD_CONFIG_FILE ]; then
+	host_containerd_conf_file="/mnt/host/${CONTAINERD_CONFIG_FILE#/}"
+else
+	host_containerd_conf_file="${host_etc}/containerd/config.toml"
+fi
 host_containerd_conf_file_backup="${host_containerd_conf_file}.orig"
 host_run="/mnt/host/run"
 host_var_lib="/mnt/host/var/lib"
@@ -673,6 +677,10 @@ function unconfig_crio_for_sysbox() {
 
 function config_containerd_for_sysbox() {
 	echo "Adding Sysbox to containerd config ..."
+
+	# Ensure config file exists
+	mkdir -p "$(dirname "${host_containerd_conf_file}")"
+	touch -a "${host_containerd_conf_file}"
 
 	# Backup the original containerd config if not already backed up
 	if [ ! -f "${host_containerd_conf_file_backup}" ]; then
