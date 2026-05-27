@@ -59,6 +59,10 @@ host_run="/mnt/host/run"
 host_var_lib="/mnt/host/var/lib"
 host_var_lib_sysbox_deploy_k8s="${host_var_lib}/sysbox-deploy-k8s"
 
+if [ ! -v CONTAINERD_SYSTEMD_UNIT ]; then
+	CONTAINERD_SYSTEMD_UNIT="containerd"
+fi
+
 #
 # Subid default values.
 #
@@ -716,7 +720,7 @@ function config_containerd_for_sysbox() {
 	fi
 
 	echo "Restarting containerd to apply changes ..."
-	systemctl restart containerd
+	systemctl restart ${CONTAINERD_SYSTEMD_UNIT}
 }
 
 function unconfig_containerd_for_sysbox() {
