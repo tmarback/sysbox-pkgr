@@ -59,8 +59,13 @@ host_run="/mnt/host/run"
 host_var_lib="/mnt/host/var/lib"
 host_var_lib_sysbox_deploy_k8s="${host_var_lib}/sysbox-deploy-k8s"
 
-if [ ! -v CONTAINERD_SYSTEMD_UNIT ]; then
-	CONTAINERD_SYSTEMD_UNIT="containerd"
+if [ -v CONTAINERD_SYSTEMD_UNIT_EXPR ]; then
+	containerd_systemd_unit="$(eval "${CONTAINERD_SYSTEMD_UNIT_EXPR}")"
+	echo "Resolved systemd unit: ${containerd_systemd_unit}"
+elif [ -v CONTAINERD_SYSTEMD_UNIT ]; then
+	containerd_systemd_unit="${CONTAINERD_SYSTEMD_UNIT}"
+else
+	containerd_systemd_unit="containerd"
 fi
 
 #
@@ -720,7 +725,7 @@ function config_containerd_for_sysbox() {
 	fi
 
 	echo "Restarting containerd to apply changes ..."
-	systemctl restart ${CONTAINERD_SYSTEMD_UNIT}
+	systemctl restart ${containerd_systemd_unit}
 }
 
 function unconfig_containerd_for_sysbox() {
