@@ -1072,7 +1072,7 @@ function install_precheck() {
 	# check if we need to install CRI-O or not
 	runtime_precheck
 
-	if systemctl is-active --quiet sysbox; then
+	if systemctl is-active --quiet sysbox && [ -f "${host_containerd_conf_file}" ]; then
 		do_sysbox_install="false"
 	fi
 
