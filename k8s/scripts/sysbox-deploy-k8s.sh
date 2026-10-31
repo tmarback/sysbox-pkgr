@@ -1340,6 +1340,18 @@ function main() {
 		# Prevent new pods being scheduled till sysbox installation/update is completed.
 		add_taint_to_node "${k8s_taints}"
 
+		# Modify FUSE AppArmor profile if necessary
+		if [ -f "/etc/apparmor.d/fusermount3" ]; then
+			mkdir -p /etc/apparmor.d/local
+			echo "# allow Sysbox to create fuse mounts" > /etc/apparmor.d/local/fusermount3
+			
+			echo "mount fstype=@{fuse_types} options=(nosuid,nodev,rw) -> /var/lib/sysboxfs/**/," >> /etc/apparmor.d/local/fusermount3
+			echo "mount fstype=@{fuse_types} options=(nosuid,nodev,ro) -> /var/lib/sysboxfs/**/," >> /etc/apparmor.d/local/fusermount3
+			echo "umount /var/lib/sysboxfs/**/," >> /etc/apparmor.d/local/fusermount3
+
+			apparmor_parser -r /etc/apparmor.d/fusermount3
+		fi
+
 		# Install CRI-O (if necessary)
 		if [[ "$do_crio_install" == "true" ]]; then
 			add_label_to_node "crio-runtime=installing"
