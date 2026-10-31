@@ -1341,17 +1341,21 @@ function main() {
 		add_taint_to_node "${k8s_taints}"
 
 		# Modify FUSE AppArmor profile if necessary
-		if [ -f "/etc/apparmor.d/fusermount3" ]; then
+		apparmor_dir="${host_etc}/apparmor.d"
+		if [ -f "${apparmor_dir}/fusermount3" ]; then
 			echo "Adding modifications for FUSE's AppArmor profile"
-			
-			mkdir -p /etc/apparmor.d/local
-			echo "# allow Sysbox to create fuse mounts" > /etc/apparmor.d/local/fusermount3
-			
-			echo "mount fstype=@{fuse_types} options=(nosuid,nodev,rw) -> /var/lib/sysboxfs/**/," >> /etc/apparmor.d/local/fusermount3
-			echo "mount fstype=@{fuse_types} options=(nosuid,nodev,ro) -> /var/lib/sysboxfs/**/," >> /etc/apparmor.d/local/fusermount3
-			echo "umount /var/lib/sysboxfs/**/," >> /etc/apparmor.d/local/fusermount3
 
-			apparmor_parser -r /etc/apparmor.d/fusermount3
+			apparmor_local_dir="${apparmor_dir}/local"
+			apparmor_fuse_file="${apparmor_local_dir}/fusermount3"
+			
+			mkdir -p "${apparmor_local_dir}"
+			echo "# allow Sysbox to create fuse mounts" > "${apparmor_fuse_file}"
+			
+			echo "mount fstype=@{fuse_types} options=(nosuid,nodev,rw) -> /var/lib/sysboxfs/**/," >> "${apparmor_fuse_file}"
+			echo "mount fstype=@{fuse_types} options=(nosuid,nodev,ro) -> /var/lib/sysboxfs/**/," >> "${apparmor_fuse_file}"
+			echo "umount /var/lib/sysboxfs/**/," >> "${apparmor_fuse_file}"
+
+			systemctl reload apparmor.service
 		fi
 
 		# Install CRI-O (if necessary)
