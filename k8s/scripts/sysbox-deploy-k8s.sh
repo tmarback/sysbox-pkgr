@@ -1342,6 +1342,8 @@ function main() {
 
 		# Modify FUSE AppArmor profile if necessary
 		if [ -f "/etc/apparmor.d/fusermount3" ]; then
+			echo "Adding modifications for FUSE's AppArmor profile"
+			
 			mkdir -p /etc/apparmor.d/local
 			echo "# allow Sysbox to create fuse mounts" > /etc/apparmor.d/local/fusermount3
 			
